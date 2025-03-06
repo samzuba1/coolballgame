@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>90s Flappy Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: #ff5db1;
+            background: linear-gradient(90deg, #ff5db1 0%, #6ec3f4 50%, #7bf2e9 100%);
+            color: #fff;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border: 5px solid #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.5s ease;
+        }
+        
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #name-screen {
+            background: linear-gradient(90deg, #ff5db1 0%, #6ec3f4 50%, #7bf2e9 100%);
+            z-index: 30;
+        }
+        
+        #start-screen {
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 20;
+        }
+        
+        #game-over-screen {
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 25;
+        }
+        
+        #leaderboard-screen {
+            background: linear-gradient(90deg, #ff5db1 0%, #6ec3f4 50%, #7bf2e9 100%);
+            z-index: 15;
+        }
+        
+        #countdown-screen {
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 10;
+            color: white;
+            font-size: 5rem;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #ff00ff;
+        }
+        
+        .input-container {
+            background: #ffff00;
+            border: 5px solid #ff00ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 5px 5px 0 #00ffff;
+            width: 300px;
+        }
+        
+        .title {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffff00;
+            text-shadow: 3px 3px 0 #ff00ff, 6px 6px 0 #00ffff;
+            transform: rotate(-5deg);
+        }
+        
+        input {
+            padding: 10px;
+            font-size: 1.2rem;
+            border: 3px solid #ff00ff;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        
+        button {
+            background: #00ffff;
+            border: 3px solid #ff00ff;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 10px;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 3px 3px 0 #ff00ff;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 5px 5px 0 #ff00ff;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+            box-shadow: 1px 1px 0 #ff00ff;
+        }
+        
+        .leaderboard {
+            background: #ffff00;
+            border: 5px solid #ff00ff;
+            border-radius: 10px;
+            padding: 20px;
+            color: #000;
+            width: 300px;
+            margin-top: 20px;
+            box-shadow: 5px 5px 0 #00ffff;
+        }
+        
+        .leaderboard h2 {
+            margin-top: 0;
+            color: #ff00ff;
+            text-shadow: 1px 1px 0 #00ffff;
+        }
+        
+        .leaderboard ol {
+            text-align: left;
+            padding-left: 30px;
+        }
+        
+        .leaderboard li {
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .highlight {
+            background: #00ffff;
+            padding: 2px 5px;
+            border-radius: 3px;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        #score-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 3px 3px 0 #ff00ff, 5px 5px 0 #00ffff;
+            z-index: 5;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 15px;
+            border-radius: 10px;
+            border: 2px solid #ffff00;
+        }
+        
+        #final-score {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffff00;
+            text-shadow: 3px 3px 0 #ff00ff;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 0, 0.8);
+            color: #000;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 3px solid #ff00ff;
+            max-width: 400px;
+        }
+        
+        #your-place {
+            margin-top: 10px;
+            font-style: italic;
+            color: #ff00ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="score-display" class="hidden">Score: 0</div>
+        
+        <div id="name-screen" class="screen">
+            <h1 class="title">90s Flappy Game!</h1>
+            <div class="input-container">
+                <label for="player-name">Enter Your Rad Name:</label>
+                <input type="text" id="player-name" maxlength="15" placeholder="Player Name">
+                <button id="start-button">Let's Play!</button>
+            </div>
+        </div>
+        
+        <div id="start-screen" class="screen hidden">
+            <h1 class="title">Ready to Play?</h1>
+            <div class="instructions">
+                <p>Hold SPACE to fly up</p>
+                <p>Release to drop</p>
+                <p>Avoid the obstacles!</p>
+            </div>
+            <button id="play-button">Play Now!</button>
+        </div>
+        
+        <div id="countdown-screen" class="screen hidden">
+            <div id="countdown">3</div>
+        </div>
+        
+        <div id="game-over-screen" class="screen hidden">
+            <h1 class="title">Game Over!</h1>
+            <div id="final-score">Score: 0</div>
+            <button id="leaderboard-button">See Leaderboard</button>
+        </div>
+        
+        <div id="leaderboard-screen" class="screen hidden">
+            <h1 class="title">High Scores!</h1>
+            <div class="leaderboard">
+                <h2>Top Players</h2>
+                <ol id="leaderboard-list"></ol>
+                <div id="your-place"></div>
+            </div>
+            <button id="play-again-button">Play Again!</button>
+        </div>
+    </div>
+    
+    <script>
+        // Game variables
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        let canvasWidth = window.innerWidth * 0.8;
+        let canvasHeight = window.innerHeight * 0.8;
+        
+        // Set canvas size
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let playerName = '';
+        let countdownValue = 3;
+        let scoreTimer = null;
+        
+        // === HELICOPTER STYLE PHYSICS ===
+        const ballRadius = 15;
+        let ballX = canvasWidth / 4;
+        let ballY = canvasHeight / 2;
+        
+        // Constants for helicopter-style movement
+        const GRAVITY = 2.8;        // Fast falling when not pressing space
+        const LIFT_POWER = 3.2;     // Immediate upward movement when pressing space
+        
+        // Obstacles - wider spacing
+        const obstacleWidth = 30;
+        const gapSize = 180;        // Larger gap
+        const obstacleSpacing = 400; // Much wider spacing
+        let obstacles = [];
+        let obstacleSpeed = 2.2;     // Consistent speed
+        
+        // Colors and patterns
+        const colors = ['#ff00ff', '#00ffff', '#ffff00', '#ff5db1'];
+        
+        // Leaderboard
+        let leaderboard = JSON.parse(localStorage.getItem('flappyLeaderboard')) || [];
+        
+        // Screen elements
+        const nameScreen = document.getElementById('name-screen');
+        const startScreen = document.getElementById('start-screen');
+        const countdownScreen = document.getElementById('countdown-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const leaderboardScreen = document.getElementById('leaderboard-screen');
+        const scoreDisplay = document.getElementById('score-display');
+        const finalScore = document.getElementById('final-score');
+        const countdownElement = document.getElementById('countdown');
+        const leaderboardList = document.getElementById('leaderboard-list');
+        const yourPlace = document.getElementById('your-place');
+        
+        // Buttons
+        const startButton = document.getElementById('start-button');
+        const playButton = document.getElementById('play-button');
+        const leaderboardButton = document.getElementById('leaderboard-button');
+        const playAgainButton = document.getElementById('play-again-button');
+        
+        // Input
+        const playerNameInput = document.getElementById('player-name');
+        
+        // Check for saved name
+        if (sessionStorage.getItem('playerName')) {
+            playerNameInput.value = sessionStorage.getItem('playerName');
+        }
+        
+        // Event Listeners
+        startButton.addEventListener('click', () => {
+            if (playerNameInput.value.trim() !== '') {
+                playerName = playerNameInput.value.trim();
+                sessionStorage.setItem('playerName', playerName);
+                showScreen(startScreen);
+            } else {
+                alert('Please enter your name!');
+            }
+        });
+        
+        playButton.addEventListener('click', startCountdown);
+        leaderboardButton.addEventListener('click', showLeaderboard);
+        playAgainButton.addEventListener('click', startCountdown);
+        
+        // Space bar control
+        let spacePressed = false;
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                spacePressed = true;
+                e.preventDefault(); // Prevent page scrolling
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                spacePressed = false;
+                e.preventDefault(); // Prevent page scrolling
+            }
+        });
+        
+        // Touch controls for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            spacePressed = true;
+            e.preventDefault(); // Prevent scrolling
+        });
+        
+        canvas.addEventListener('touchend', (e) => {
+            spacePressed = false;
+            e.preventDefault(); // Prevent scrolling
+        });
+        
+        // Window resize handling
+        window.addEventListener('resize', () => {
+            canvasWidth = window.innerWidth * 0.8;
+            canvasHeight = window.innerHeight * 0.8;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            // Reset ball position
+            if (!gameRunning) {
+                ballX = canvasWidth / 4;
+                ballY = canvasHeight / 2;
+            }
+        });
+        
+        // Game functions
+        function showScreen(screen) {
+            // Hide all screens
+            nameScreen.classList.add('hidden');
+            startScreen.classList.add('hidden');
+            countdownScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            leaderboardScreen.classList.add('hidden');
+            
+            // Show requested screen
+            screen.classList.remove('hidden');
+        }
+        
+        function startCountdown() {
+            showScreen(countdownScreen);
+            scoreDisplay.classList.remove('hidden');
+            countdownValue = 3;
+            countdownElement.textContent = countdownValue;
+            
+            // Reset ball for countdown
+            ballX = canvasWidth / 4;
+            ballY = canvasHeight / 2;
+            
+            // Clear obstacles
+            obstacles = [];
+            
+            // Reset score
+            score = 0;
+            updateScore();
+            
+            // Clear any existing score timer
+            if (scoreTimer) {
+                clearInterval(scoreTimer);
+                scoreTimer = null;
+            }
+            
+            // Start drawing during countdown
+            requestAnimationFrame(drawCountdown);
+            
+            const countdownInterval = setInterval(() => {
+                countdownValue--;
+                countdownElement.textContent = countdownValue;
+                
+                if (countdownValue <= 0) {
+                    clearInterval(countdownInterval);
+                    startGame();
+                }
+            }, 1000);
+        }
+        
+        function drawCountdown() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            // Draw background pattern
+            drawBackground();
+            
+            // Update ball position during countdown
+            updateBall();
+            
+            // Draw ball
+            drawBall();
+            
+            if (countdownValue > 0) {
+                requestAnimationFrame(drawCountdown);
+            }
+        }
+        
+        function startGame() {
+            gameRunning = true;
+            showScreen(countdownScreen);
+            countdownScreen.style.opacity = '0';
+            
+            // Reset score
+            score = 0;
+            updateScore();
+            
+            // Set a timeout to add the first obstacle
+            setTimeout(() => {
+                addObstacle();
+            }, 3000); // Give the player 3 seconds before the first obstacle
+            
+            // Start game loop
+            requestAnimationFrame(gameLoop);
+            
+            // Make score increase continuously for a more dynamic feel (25 points per second)
+            scoreTimer = setInterval(() => {
+                score += 1; // Small increment for visual effect
+                updateScore();
+            }, 40); // Update approximately 25 times per second (25 points per second)
+        }
+        
+        function gameLoop() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            // Draw background
+            drawBackground();
+            
+            // Update and draw obstacles
+            updateObstacles();
+            
+            // Update and draw ball
+            updateBall();
+            drawBall();
+            
+            // Check collisions
+            if (checkCollisions()) {
+                gameOver();
+                return;
+            }
+            
+            // Continue game loop
+            if (gameRunning) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        function updateBall() {
+            // === HELICOPTER STYLE PHYSICS ===
+            if (spacePressed) {
+                // Immediate upward movement when space is pressed
+                ballY -= LIFT_POWER;
+            } else {
+                // Fall when space is not pressed
+                ballY += GRAVITY;
+            }
+            
+            // Boundary checks
+            if (ballY < ballRadius) {
+                ballY = ballRadius;
+            }
+            
+            if (ballY > canvasHeight - ballRadius) {
+                ballY = canvasHeight - ballRadius;
+                
+                if (gameRunning) {
+                    gameOver();
+                }
+            }
+        }
+        
+        function drawBall() {
+            // Draw ball with gradient
+            const gradient = ctx.createRadialGradient(
+                ballX, ballY, 0, 
+                ballX, ballY, ballRadius
+            );
+            gradient.addColorStop(0, '#ffffff');
+            gradient.addColorStop(1, '#00ffff');
+            
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#ff00ff';
+            ctx.stroke();
+            ctx.closePath();
+        }
+        
+        function drawBackground() {
+            // Draw zigzag pattern in background
+            ctx.fillStyle = '#000066';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            
+            // Add some 90s patterns with opacity
+            ctx.globalAlpha = 0.3; // Add opacity to make patterns less distracting
+            for (let i = 0; i < 10; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * canvasHeight / 10);
+                
+                for (let j = 0; j < 20; j++) {
+                    const x = j * canvasWidth / 20;
+                    const y = i * canvasHeight / 10 + (j % 2 === 0 ? -20 : 20);
+                    ctx.lineTo(x, y);
+                }
+                
+                ctx.strokeStyle = colors[i % colors.length];
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1.0; // Reset opacity for other elements
+        }
+        
+        function addObstacle() {
+            // Make sure gap position is not too close to top or bottom
+            const minGap = 80; // Minimum distance from top/bottom
+            const availableSpace = canvasHeight - (2 * minGap);
+            const gapPosition = Math.floor(Math.random() * availableSpace) + minGap;
+            
+            obstacles.push({
+                x: canvasWidth,
+                gapTop: gapPosition,
+                gapBottom: gapPosition + gapSize,
+                passed: false,
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+        }
+        
+        function updateObstacles() {
+            for (let i = 0; i < obstacles.length; i++) {
+                const obstacle = obstacles[i];
+                
+                // Move obstacle
+                obstacle.x -= obstacleSpeed;
+                
+                // Draw obstacle
+                drawObstacle(obstacle);
+                
+                // Score points when passing obstacle
+                if (!obstacle.passed && obstacle.x + obstacleWidth < ballX - ballRadius) {
+                    obstacle.passed = true;
+                    score += 75; // Bonus points for passing obstacles
+                    updateScore();
+                }
+                
+                // Remove obstacles that are off screen
+                if (obstacle.x + obstacleWidth < 0) {
+                    obstacles.splice(i, 1);
+                    i--;
+                }
+            }
+            
+            // Add new obstacle
+            if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvasWidth - obstacleSpacing) {
+                addObstacle();
+            }
+        }
+        
+        function drawObstacle(obstacle) {
+            ctx.fillStyle = obstacle.color;
+            
+            // Top part
+            ctx.fillRect(obstacle.x, 0, obstacleWidth, obstacle.gapTop);
+            
+            // Bottom part
+            ctx.fillRect(obstacle.x, obstacle.gapBottom, obstacleWidth, canvasHeight - obstacle.gapBottom);
+            
+            // Add some decoration
+            const patternWidth = 10;
+            ctx.fillStyle = '#000066';
+            
+            for (let y = 0; y < obstacle.gapTop; y += patternWidth * 2) {
+                ctx.fillRect(obstacle.x + obstacleWidth / 4, y, obstacleWidth / 2, patternWidth);
+            }
+            
+            for (let y = obstacle.gapBottom; y < canvasHeight; y += patternWidth * 2) {
+                ctx.fillRect(obstacle.x + obstacleWidth / 4, y, obstacleWidth / 2, patternWidth);
+            }
+        }
+        
+        function checkCollisions() {
+            // Check if ball hits obstacles
+            for (const obstacle of obstacles) {
+                // Ball's right edge > obstacle's left edge AND
+                // Ball's left edge < obstacle's right edge
+                if (ballX + ballRadius > obstacle.x && ballX - ballRadius < obstacle.x + obstacleWidth) {
+                    // Ball's top edge < obstacle's top part bottom edge OR
+                    // Ball's bottom edge > obstacle's bottom part top edge
+                    if (ballY - ballRadius < obstacle.gapTop || ballY + ballRadius > obstacle.gapBottom) {
+                        return true; // Collision detected
+                    }
+                }
+            }
+            
+            // Check boundaries
+            if (ballY - ballRadius < 0 || ballY + ballRadius > canvasHeight) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        function updateScore() {
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+        
+        function gameOver() {
+            gameRunning = false;
+            finalScore.textContent = `Score: ${score}`;
+            
+            // Stop score timer
+            if (scoreTimer) {
+                clearInterval(scoreTimer);
+                scoreTimer = null;
+            }
+            
+            // Add to leaderboard
+            addScoreToLeaderboard();
+            
+            // Show game over screen
+            showScreen(gameOverScreen);
+            scoreDisplay.classList.add('hidden');
+        }
+        
+        function addScoreToLeaderboard() {
+            leaderboard.push({
+                name: playerName,
+                score: score
+            });
+            
+            // Sort leaderboard by score in descending order
+            leaderboard.sort((a, b) => b.score - a.score);
+            
+            // Keep only top 100 scores
+            if (leaderboard.length > 100) {
+                leaderboard = leaderboard.slice(0, 100);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('flappyLeaderboard', JSON.stringify(leaderboard));
+        }
+        
+        function showLeaderboard() {
+            // Clear previous list
+            leaderboardList.innerHTML = '';
+            
+            // Populate leaderboard
+            const topScores = leaderboard.slice(0, 5);
+            
+            topScores.forEach((entry, index) => {
+                const li = document.createElement('li');
+                
+                // Highlight if this is the player's most recent score
+                if (entry.name === playerName && entry.score === score) {
+                    li.classList.add('highlight');
+                }
+                
+                li.textContent = `${entry.name}: ${entry.score}`;
+                leaderboardList.appendChild(li);
+            });
+            
+            // Show player's place if not in top 5
+            const playerIndex = leaderboard.findIndex(entry => 
+                entry.name === playerName && entry.score === score);
+            
+            if (playerIndex >= 5) {
+                yourPlace.textContent = `Your place: #${playerIndex + 1} (${playerName}: ${score})`;
+            } else {
+                yourPlace.textContent = '';
+            }
+            
+            showScreen(leaderboardScreen);
+        }
+        
+        // Initialize game
+        window.onload = function() {
+            // Draw initial ball for visual reference
+            drawBackground();
+            drawBall();
+        };
+    </script>
+</body>
+</html>
