@@ -369,13 +369,12 @@
 // Game variables
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
+let canvasWidth = window.innerWidth * 0.8;
+let canvasHeight = window.innerHeight * 0.8;
 
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+// Set canvas size
+canvas.width = canvasWidth;
+canvas.height = canvasHeight;
 
 // Game state
 let gameRunning = false;
