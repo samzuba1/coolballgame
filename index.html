@@ -1055,7 +1055,7 @@ function drawBackground() {
 }
     </script>
 <script>
-    // Mobile Compatibility Fixes
+ // Mobile Compatibility Fixes
 (function() {
     // Ensure we have a reference to the canvas and game state
     const canvas = document.getElementById('game-canvas');
@@ -1064,24 +1064,44 @@ function drawBackground() {
         return;
     }
 
-    // Force font family
-    function applyFontFix() {
-        const fontStyle = document.createElement('style');
-        fontStyle.textContent = `
-            * {
-                font-family: 'Comic Sans MS', Arial, sans-serif !important;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-            }
-            body, input, button, h1, h2, p, div, span {
-                font-family: 'Comic Sans MS', Arial, sans-serif !important;
-            }
-        `;
-        document.head.appendChild(fontStyle);
+    // Adjust responsive layout
+    function adjustLayout() {
+        const gameContainer = document.getElementById('game-container');
+        const scoreDisplay = document.getElementById('score-display');
+        const levelDisplay = document.getElementById('level-display');
+        const timerDisplay = document.getElementById('timer-display');
+
+        // Responsive canvas sizing
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        // Adjust canvas size
+        canvas.width = viewportWidth * 0.9;
+        canvas.height = viewportHeight * 0.7;
+
+        // Adjust display positioning for mobile
+        if (viewportWidth <= 768) {
+            // Stacked layout for small screens
+            scoreDisplay.style.position = 'relative';
+            levelDisplay.style.position = 'relative';
+            timerDisplay.style.position = 'relative';
+
+            scoreDisplay.style.left = 'auto';
+            levelDisplay.style.left = 'auto';
+            timerDisplay.style.right = 'auto';
+
+            // Center displays
+            scoreDisplay.style.margin = '5px auto';
+            levelDisplay.style.margin = '5px auto';
+            timerDisplay.style.margin = '5px auto';
+        }
     }
 
     // Enhanced touch controls
     function setupTouchControls() {
+        // Ensure global spacePressed is used
+        let isSpacePressed = false;
+
         // Prevent default touch behaviors
         document.addEventListener('touchmove', function(e) {
             if (typeof gameRunning !== 'undefined' && gameRunning) {
@@ -1089,33 +1109,45 @@ function drawBackground() {
             }
         }, { passive: false });
 
-        // Main touch handlers
+        // Simplified touch handlers
         function handleTouchStart(e) {
             if (typeof gameRunning !== 'undefined' && gameRunning) {
                 e.preventDefault();
-                spacePressed = true;
+                // Directly modify the global spacePressed
+                window.spacePressed = true;
             }
         }
 
         function handleTouchEnd(e) {
             if (typeof gameRunning !== 'undefined' && gameRunning) {
                 e.preventDefault();
-                spacePressed = false;
+                // Directly modify the global spacePressed
+                window.spacePressed = false;
             }
         }
 
-        // Add touch listeners
-        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-        canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
-        document.addEventListener('touchstart', handleTouchStart, { passive: false });
-        document.addEventListener('touchend', handleTouchEnd, { passive: false });
+        // Remove existing listeners first
+        const touchEvents = ['touchstart', 'touchend'];
+        const touchTargets = [canvas, document];
 
-        // Prevent zoom
+        touchTargets.forEach(target => {
+            touchEvents.forEach(eventName => {
+                target.removeEventListener(eventName, handleTouchStart, { passive: false });
+                target.removeEventListener(eventName, handleTouchEnd, { passive: false });
+            });
+        });
+
+        // Add new touch listeners
+        touchTargets.forEach(target => {
+            target.addEventListener('touchstart', handleTouchStart, { passive: false });
+            target.addEventListener('touchend', handleTouchEnd, { passive: false });
+        });
+
+        // Prevent zoom and multiple touches
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         }, { passive: false });
 
-        // Disable multiple touch
         document.addEventListener('touchstart', function(e) {
             if (e.touches.length > 1) {
                 e.preventDefault();
@@ -1123,30 +1155,20 @@ function drawBackground() {
         }, { passive: false });
     }
 
-    // Viewport meta tag
-    function ensureViewportMeta() {
-        let viewportMeta = document.querySelector('meta[name="viewport"]');
-        if (!viewportMeta) {
-            viewportMeta = document.createElement('meta');
-            viewportMeta.name = 'viewport';
-            document.head.appendChild(viewportMeta);
-        }
-        viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-    }
-
     // Run all fixes
     function initializeMobileFixes() {
-        applyFontFix();
+        adjustLayout();
         setupTouchControls();
-        ensureViewportMeta();
+
+        // Adjust layout on resize
+        window.addEventListener('resize', adjustLayout);
     }
 
-    // Run fixes on load and after a short delay to ensure game script is loaded
+    // Run fixes on load and after a short delay
     window.addEventListener('load', function() {
-        // Immediate fix
         initializeMobileFixes();
         
-        // Delayed fix to catch any late-loaded elements
+        // Delayed fix to ensure everything is loaded
         setTimeout(initializeMobileFixes, 1000);
     });
 })();
