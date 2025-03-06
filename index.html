@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>90s Flappy Game</title>
     <style>
         body {
             margin: 0;
@@ -12,8 +9,7 @@
             color: #fff;
             overflow: hidden;
             text-align: center;
-            touch-action: none;
-            background: linear-gradient(90deg, #ff5db1 0%, #6ec3f4 50%, #7bf2e9 100%);
+            touch-action: manipulation;
         }
         
         canvas {
@@ -216,7 +212,7 @@
         }
         
         #score-display {
-            left: 20px;
+            left: 185px;
         }
         
         #level-display {
@@ -225,7 +221,7 @@
         }
         
         #timer-display {
-            right: 20px;
+            right: 185px;
         }
         
         #final-score {
@@ -288,27 +284,12 @@
             .desktop-instruction {
                 display: none;
             }
-            
-            #score-display {
-                left: 10px;
-                font-size: 1.5rem;
-            }
-            
-            #timer-display {
-                right: 10px;
-                font-size: 1.5rem;
-            }
-            
-            .title {
-                font-size: 2.5rem;
-            }
-            
-            canvas {
-                max-width: 95%;
-                height: auto;
-            }
         }
-    </style>
+        </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>90s Flappy Game</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="scz-credit">made by scz</div>
@@ -383,12 +364,13 @@
         </div>
     </div>
     
+    <script src="game.js"></script>
     <script>
 // Game variables
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
-let canvasWidth = Math.min(window.innerWidth * 0.8, 800); // Limit max width
-let canvasHeight = Math.min(window.innerHeight * 0.8, 600); // Limit max height
+let canvasWidth = window.innerWidth * 0.8;
+let canvasHeight = window.innerHeight * 0.8;
 
 // Set canvas size
 canvas.width = canvasWidth;
@@ -410,32 +392,27 @@ const levelThemes = [
     {
         ballColor: '#00ffff',
         ballStroke: '#ff00ff',
-        obstacleColors: ['#ff00ff', '#00ffff', '#ffff00', '#ff5db1'],
-        background: 'linear-gradient(90deg, #ff5db1 0%, #6ec3f4 50%, #7bf2e9 100%)'
+        obstacleColors: ['#ff00ff', '#00ffff', '#ffff00', '#ff5db1']
     },
     {
         ballColor: '#ffeb3b',
         ballStroke: '#ff8c00',
-        obstacleColors: ['#ff8c00', '#ff6348', '#ffeb3b', '#ff3d00'],
-        background: 'linear-gradient(135deg, #ff8c00, #ff3d00)'
+        obstacleColors: ['#ff8c00', '#ff6348', '#ffeb3b', '#ff3d00']
     },
     {
         ballColor: '#76ff03',
         ballStroke: '#43a047',
-        obstacleColors: ['#43a047', '#76ff03', '#00e676', '#1b5e20'],
-        background: 'linear-gradient(135deg, #76ff03, #1b5e20)'
+        obstacleColors: ['#43a047', '#76ff03', '#00e676', '#1b5e20']
     },
     {
         ballColor: '#ea80fc',
         ballStroke: '#6a1b9a',
-        obstacleColors: ['#6a1b9a', '#9c27b0', '#ea80fc', '#4a148c'],
-        background: 'linear-gradient(135deg, #ea80fc, #4a148c)'
+        obstacleColors: ['#6a1b9a', '#9c27b0', '#ea80fc', '#4a148c']
     },
     {
         ballColor: '#80d8ff',
         ballStroke: '#0d47a1',
-        obstacleColors: ['#0d47a1', '#2196f3', '#80d8ff', '#01579b'],
-        background: 'linear-gradient(135deg, #80d8ff, #01579b)'
+        obstacleColors: ['#0d47a1', '#2196f3', '#80d8ff', '#01579b']
     }
 ];
 
@@ -563,31 +540,38 @@ document.addEventListener('keyup', (e) => {
     }
 });
 
-// Improved touch controls for the entire game area
-function handleTouchStart(e) {
+// Enhanced touch controls for the entire game area
+document.addEventListener('touchstart', (e) => {
+    if (gameRunning) {
+        spacePressed = true;
+        e.preventDefault(); // Prevent scrolling
+    }
+}, {passive: false});
+
+document.addEventListener('touchend', (e) => {
+    if (gameRunning) {
+        spacePressed = false;
+        e.preventDefault(); // Prevent scrolling
+    }
+}, {passive: false});
+
+// Make sure canvas touch events also work
+canvas.addEventListener('touchstart', (e) => {
     spacePressed = true;
     e.preventDefault(); // Prevent scrolling
-}
+}, {passive: false});
 
-function handleTouchEnd(e) {
+canvas.addEventListener('touchend', (e) => {
     spacePressed = false;
     e.preventDefault(); // Prevent scrolling
-}
-
-// Attach event listeners to document for broader coverage
-document.addEventListener('touchstart', handleTouchStart, { passive: false });
-document.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-// Also attach to canvas specifically
-canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+}, {passive: false});
 
 // Prevent zooming on double tap
 document.addEventListener('touchmove', (e) => {
     if (gameRunning) {
         e.preventDefault();
     }
-}, { passive: false });
+}, {passive: false});
 
 // Focus handling for mobile
 window.addEventListener('blur', () => {
@@ -598,10 +582,8 @@ window.addEventListener('blur', () => {
 
 // Window resize handling
 window.addEventListener('resize', () => {
-    // Limit the canvas size for better performance
-    canvasWidth = Math.min(window.innerWidth * 0.8, 800);
-    canvasHeight = Math.min(window.innerHeight * 0.8, 600);
-    
+    canvasWidth = window.innerWidth * 0.8;
+    canvasHeight = window.innerHeight * 0.8;
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
     
@@ -611,7 +593,6 @@ window.addEventListener('resize', () => {
         ballY = canvasHeight / 2;
     }
 });
-
 // Game functions
 function showScreen(screen) {
     // Hide all screens
@@ -713,7 +694,6 @@ function drawCountdown() {
         requestAnimationFrame(drawCountdown);
     }
 }
-
 function drawObstacles() {
     const currentTheme = levelThemes[currentLevel - 1];
     
@@ -740,7 +720,6 @@ function drawPowerUps() {
         ctx.fill();
     }
 }
-
 function startGame() {
     // Hide countdown screen
     countdownScreen.classList.add('hidden');
@@ -775,7 +754,6 @@ function startGame() {
     // Start game loop
     requestAnimationFrame(gameLoop);
 }
-
 function gameLoop() {
     // Clear canvas
     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -785,11 +763,11 @@ function gameLoop() {
     
     // Update and draw obstacles
     updateObstacles();
-    drawObstacles();
+    drawObstacles(); // Add this line
     
     // Update and draw power-ups
     updatePowerUps();
-    drawPowerUps();
+    drawPowerUps(); // Add this line
     
     // Update and draw ball
     updateBall();
@@ -830,12 +808,10 @@ function updateBall() {
         }
     }
 }
-
 function updateScore() {
     // Update the score display
     document.getElementById('score-display').textContent = `Score: ${score}`;
 }
-
 function updateObstacles() {
     // Move existing obstacles
     for (let i = obstacles.length - 1; i >= 0; i--) {
@@ -921,6 +897,7 @@ function gameOver() {
     // Optional: Add to leaderboard
     addToLeaderboard();
 }
+
 function addToLeaderboard() {
     // Create a leaderboard entry
     const entry = {
@@ -935,7 +912,7 @@ function addToLeaderboard() {
     // Sort leaderboard by score (descending)
     leaderboard.sort((a, b) => b.score - a.score);
 
-    // Keep only top 5 scores
+    // Keep only top 10 scores
     leaderboard = leaderboard.slice(0, 5);
 
     // Save to local storage
@@ -950,21 +927,13 @@ function displayLeaderboard() {
     leaderboardList.innerHTML = '';
 
     // Populate leaderboard with updated data
-    leaderboard.forEach((entry, index) => {
+    leaderboard.forEach(entry => {
         const li = document.createElement('li');
         li.textContent = `${entry.name}: ${entry.score} (Level ${entry.level})`;
-        
-        // Add trophy for top 3
-        if (index < 3) {
-            const trophy = document.createElement('span');
-            trophy.textContent = ' 🏆';
-            trophy.className = 'trophy';
-            li.appendChild(trophy);
-        }
-        
         leaderboardList.appendChild(li);
     });
 }
+
 
 function showLeaderboard() {
     // Display the leaderboard screen
@@ -984,7 +953,6 @@ function showLeaderboard() {
         yourPlace.textContent = 'Not in top 5 this time!';
     }
 }
-
 function levelComplete() {
     // Stop current game loop
     gameRunning = false;
@@ -1017,14 +985,11 @@ function levelComplete() {
 }
 
 function addObstacle() {
-    // Create a new obstacle with more appropriate gap positioning
-    const minGapY = gapSize / 2; // Ensure minimum space at top
-    const maxGapY = canvasHeight - gapSize - minGapY; // Ensure minimum space at bottom
-    
+    // Create a new obstacle
     const obstacle = {
         x: canvasWidth,
         width: obstacleWidth,
-        gapY: minGapY + Math.random() * (maxGapY - minGapY),
+        gapY: Math.random() * (canvasHeight - gapSize),
         passed: false
     };
 
@@ -1032,12 +997,11 @@ function addObstacle() {
 }
 
 function addPowerUp() {
-    // Create a new power-up with padding from edges
-    const padding = 30;
+    // Create a new power-up
     const powerUpType = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
     const powerUp = {
         x: canvasWidth,
-        y: padding + Math.random() * (canvasHeight - padding * 2),
+        y: Math.random() * canvasHeight,
         type: powerUpType
     };
 
@@ -1090,31 +1054,5 @@ function drawBackground() {
     ctx.globalAlpha = 1.0;
 }
     </script>
-    <script>
-        // Simple, direct solution for mobile touch controls
-        document.addEventListener('touchstart', function() {
-            spacePressed = true;
-        }, false);
-        
-        document.addEventListener('touchend', function() {
-            spacePressed = false;
-        }, false);
-        
-        // Fix for background transitions
-        function applyCurrentTheme() {
-            document.body.style.background = levelThemes[currentLevel - 1].background;
-        }
-        
-        // Override the startCountdown function to ensure theme is applied
-        const originalStartCountdown = startCountdown;
-        startCountdown = function() {
-            applyCurrentTheme();
-            originalStartCountdown();
-        };
-        
-        // Make sure these elements don't interfere with touch
-        document.body.style.touchAction = 'none';
-        canvas.style.touchAction = 'none';
-        </script>
 </body>
 </html>
