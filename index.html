@@ -225,6 +225,17 @@
             font-family: 'Comic Sans MS', cursive, sans-serif;
         }
         
+        .scz-credit {
+            position: fixed;
+            bottom: 5px;
+            right: 5px;
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.3);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            z-index: 5;
+            pointer-events: none;
+        }
+        
         @media (max-width: 768px) {
             .mobile-instruction {
                 display: block;
@@ -233,6 +244,7 @@
     </style>
 </head>
 <body>
+    <div class="scz-credit">made by scz</div>
     <div id="game-container">
         <canvas id="game-canvas"></canvas>
         
