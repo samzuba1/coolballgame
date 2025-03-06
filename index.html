@@ -1054,23 +1054,38 @@ function drawBackground() {
     ctx.globalAlpha = 1.0;
 }
     </script>
-</body>
-<!-- Add this at the end of your HTML file, right before the closing </body> tag -->
 <script>
     // MOBILE FIXES
     
-    // 1. Font Fix - Force Comic Sans MS font
-    document.querySelectorAll('*').forEach(element => {
-        if (window.getComputedStyle(element).fontFamily.includes('Arial')) {
-            element.style.fontFamily = '"Comic Sans MS", cursive, sans-serif';
-        }
-    });
-    
-    // 2. Remove the external stylesheet reference if it exists
+    // Aggressive font fix
+    // 1. Remove external stylesheet completely
     const externalStylesheet = document.querySelector('link[rel="stylesheet"]');
     if (externalStylesheet) {
-        externalStylesheet.remove();
+        externalStylesheet.parentNode.removeChild(externalStylesheet);
     }
+    
+    // 2. Force Comic Sans on all elements with !important
+    const forceFontStyle = document.createElement('style');
+    forceFontStyle.innerHTML = `
+        * {
+            font-family: 'Comic Sans MS', cursive, sans-serif !important;
+        }
+        input, button {
+            font-family: 'Comic Sans MS', cursive, sans-serif !important;
+        }
+    `;
+    document.head.appendChild(forceFontStyle);
+    
+    // 3. Directly set font-family on key elements
+    const elementsToFix = [
+        'body', 'button', 'input', 'label', 'p', 'h1', 'h2', 'div', 'span'
+    ];
+    
+    elementsToFix.forEach(selector => {
+        document.querySelectorAll(selector).forEach(el => {
+            el.style.fontFamily = '"Comic Sans MS", cursive, sans-serif';
+        });
+    });
     
     // 3. Fix Touch Controls - Simpler implementation without conditions
     // Remove old touch listeners
@@ -1104,14 +1119,6 @@ function drawBackground() {
         }, false);
     });
     
-    // 4. Debug touch events (uncomment to test)
-    /*
-    document.addEventListener('touchstart', function() {
-        console.log('Touch started');
-        document.body.style.backgroundColor = 'green';
-    }, false);
-    */
-    
     // 5. Add background properties to level themes if missing
     for (let theme of levelThemes) {
         if (!theme.background) {
@@ -1129,4 +1136,5 @@ function drawBackground() {
         }
     }
     </script>
+    </body>
 </html>
