@@ -1090,5 +1090,31 @@ function drawBackground() {
     ctx.globalAlpha = 1.0;
 }
     </script>
+    <script>
+        // Simple, direct solution for mobile touch controls
+        document.addEventListener('touchstart', function() {
+            spacePressed = true;
+        }, false);
+        
+        document.addEventListener('touchend', function() {
+            spacePressed = false;
+        }, false);
+        
+        // Fix for background transitions
+        function applyCurrentTheme() {
+            document.body.style.background = levelThemes[currentLevel - 1].background;
+        }
+        
+        // Override the startCountdown function to ensure theme is applied
+        const originalStartCountdown = startCountdown;
+        startCountdown = function() {
+            applyCurrentTheme();
+            originalStartCountdown();
+        };
+        
+        // Make sure these elements don't interfere with touch
+        document.body.style.touchAction = 'none';
+        canvas.style.touchAction = 'none';
+        </script>
 </body>
 </html>
