@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>90s Flappy Game</title>
     <style>
         body {
@@ -14,6 +14,7 @@
             color: #fff;
             overflow: hidden;
             text-align: center;
+            touch-action: manipulation;
         }
         
         canvas {
@@ -21,6 +22,7 @@
             margin: 0 auto;
             border: 5px solid #fff;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            touch-action: none;
         }
         
         #game-container {
@@ -209,6 +211,25 @@
             font-style: italic;
             color: #ff00ff;
         }
+        
+        /* Mobile-specific styles */
+        .mobile-instruction {
+            display: none;
+            background: rgba(255, 255, 0, 0.8);
+            color: #000;
+            padding: 8px;
+            border-radius: 10px;
+            border: 2px solid #ff00ff;
+            margin-top: 10px;
+            font-size: 1rem;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-instruction {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
@@ -232,6 +253,10 @@
                 <p>Hold SPACE to fly up</p>
                 <p>Release to drop</p>
                 <p>Avoid the obstacles!</p>
+            </div>
+            <div class="mobile-instruction">
+                <p>TAP and HOLD screen to fly up</p>
+                <p>Release to drop</p>
             </div>
             <button id="play-button">Play Now!</button>
         </div>
@@ -355,15 +380,44 @@
             }
         });
         
-        // Touch controls for mobile
+        // Enhanced touch controls for the entire game area
+        document.addEventListener('touchstart', (e) => {
+            if (gameRunning) {
+                spacePressed = true;
+                e.preventDefault(); // Prevent scrolling
+            }
+        }, {passive: false});
+        
+        document.addEventListener('touchend', (e) => {
+            if (gameRunning) {
+                spacePressed = false;
+                e.preventDefault(); // Prevent scrolling
+            }
+        }, {passive: false});
+        
+        // Make sure canvas touch events also work
         canvas.addEventListener('touchstart', (e) => {
             spacePressed = true;
             e.preventDefault(); // Prevent scrolling
-        });
+        }, {passive: false});
         
         canvas.addEventListener('touchend', (e) => {
             spacePressed = false;
             e.preventDefault(); // Prevent scrolling
+        }, {passive: false});
+        
+        // Prevent zooming on double tap
+        document.addEventListener('touchmove', (e) => {
+            if (gameRunning) {
+                e.preventDefault();
+            }
+        }, {passive: false});
+        
+        // Focus handling for mobile
+        window.addEventListener('blur', () => {
+            if (gameRunning) {
+                spacePressed = false;
+            }
         });
         
         // Window resize handling
