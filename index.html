@@ -1055,4 +1055,78 @@ function drawBackground() {
 }
     </script>
 </body>
+<!-- Add this at the end of your HTML file, right before the closing </body> tag -->
+<script>
+    // MOBILE FIXES
+    
+    // 1. Font Fix - Force Comic Sans MS font
+    document.querySelectorAll('*').forEach(element => {
+        if (window.getComputedStyle(element).fontFamily.includes('Arial')) {
+            element.style.fontFamily = '"Comic Sans MS", cursive, sans-serif';
+        }
+    });
+    
+    // 2. Remove the external stylesheet reference if it exists
+    const externalStylesheet = document.querySelector('link[rel="stylesheet"]');
+    if (externalStylesheet) {
+        externalStylesheet.remove();
+    }
+    
+    // 3. Fix Touch Controls - Simpler implementation without conditions
+    // Remove old touch listeners
+    document.removeEventListener('touchstart', null);
+    document.removeEventListener('touchend', null);
+    canvas.removeEventListener('touchstart', null);
+    canvas.removeEventListener('touchend', null);
+    
+    // Add simple, unconditional touch handlers
+    document.addEventListener('touchstart', function() {
+        spacePressed = true;
+    }, false);
+    
+    document.addEventListener('touchend', function() {
+        spacePressed = false;
+    }, false);
+    
+    // Add simple canvas-specific touch handlers
+    canvas.addEventListener('touchstart', function() {
+        spacePressed = true;
+    }, false);
+    
+    canvas.addEventListener('touchend', function() {
+        spacePressed = false;
+    }, false);
+    
+    // Make sure touch events on buttons don't trigger game controls
+    document.querySelectorAll('button').forEach(button => {
+        button.addEventListener('touchstart', function(e) {
+            e.stopPropagation();
+        }, false);
+    });
+    
+    // 4. Debug touch events (uncomment to test)
+    /*
+    document.addEventListener('touchstart', function() {
+        console.log('Touch started');
+        document.body.style.backgroundColor = 'green';
+    }, false);
+    */
+    
+    // 5. Add background properties to level themes if missing
+    for (let theme of levelThemes) {
+        if (!theme.background) {
+            if (theme.ballColor === '#00ffff') {
+                theme.background = 'linear-gradient(90deg, #ff5db1 0%, #6ec3f4 50%, #7bf2e9 100%)';
+            } else if (theme.ballColor === '#ffeb3b') {
+                theme.background = 'linear-gradient(135deg, #ff8c00, #ff3d00)';
+            } else if (theme.ballColor === '#76ff03') {
+                theme.background = 'linear-gradient(135deg, #76ff03, #1b5e20)';
+            } else if (theme.ballColor === '#ea80fc') {
+                theme.background = 'linear-gradient(135deg, #ea80fc, #4a148c)';
+            } else if (theme.ballColor === '#80d8ff') {
+                theme.background = 'linear-gradient(135deg, #80d8ff, #01579b)';
+            }
+        }
+    }
+    </script>
 </html>
