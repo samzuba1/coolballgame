@@ -1055,86 +1055,101 @@ function drawBackground() {
 }
     </script>
 <script>
-    // MOBILE FIXES
-    
-    // Aggressive font fix
-    // 1. Remove external stylesheet completely
-    const externalStylesheet = document.querySelector('link[rel="stylesheet"]');
-    if (externalStylesheet) {
-        externalStylesheet.parentNode.removeChild(externalStylesheet);
+    // Mobile Compatibility Fixes
+(function() {
+    // Ensure we have a reference to the canvas and game state
+    const canvas = document.getElementById('game-canvas');
+    if (!canvas) {
+        console.error('Canvas not found. Mobile fixes cannot be applied.');
+        return;
     }
-    
-    // 2. Force Comic Sans on all elements with !important
-    const forceFontStyle = document.createElement('style');
-    forceFontStyle.innerHTML = `
-        * {
-            font-family: 'Comic Sans MS', cursive, sans-serif !important;
-        }
-        input, button {
-            font-family: 'Comic Sans MS', cursive, sans-serif !important;
-        }
-    `;
-    document.head.appendChild(forceFontStyle);
-    
-    // 3. Directly set font-family on key elements
-    const elementsToFix = [
-        'body', 'button', 'input', 'label', 'p', 'h1', 'h2', 'div', 'span'
-    ];
-    
-    elementsToFix.forEach(selector => {
-        document.querySelectorAll(selector).forEach(el => {
-            el.style.fontFamily = '"Comic Sans MS", cursive, sans-serif';
-        });
-    });
-    
-    // 3. Fix Touch Controls - Simpler implementation without conditions
-    // Remove old touch listeners
-    document.removeEventListener('touchstart', null);
-    document.removeEventListener('touchend', null);
-    canvas.removeEventListener('touchstart', null);
-    canvas.removeEventListener('touchend', null);
-    
-    // Add simple, unconditional touch handlers
-    document.addEventListener('touchstart', function() {
-        spacePressed = true;
-    }, false);
-    
-    document.addEventListener('touchend', function() {
-        spacePressed = false;
-    }, false);
-    
-    // Add simple canvas-specific touch handlers
-    canvas.addEventListener('touchstart', function() {
-        spacePressed = true;
-    }, false);
-    
-    canvas.addEventListener('touchend', function() {
-        spacePressed = false;
-    }, false);
-    
-    // Make sure touch events on buttons don't trigger game controls
-    document.querySelectorAll('button').forEach(button => {
-        button.addEventListener('touchstart', function(e) {
-            e.stopPropagation();
-        }, false);
-    });
-    
-    // 5. Add background properties to level themes if missing
-    for (let theme of levelThemes) {
-        if (!theme.background) {
-            if (theme.ballColor === '#00ffff') {
-                theme.background = 'linear-gradient(90deg, #ff5db1 0%, #6ec3f4 50%, #7bf2e9 100%)';
-            } else if (theme.ballColor === '#ffeb3b') {
-                theme.background = 'linear-gradient(135deg, #ff8c00, #ff3d00)';
-            } else if (theme.ballColor === '#76ff03') {
-                theme.background = 'linear-gradient(135deg, #76ff03, #1b5e20)';
-            } else if (theme.ballColor === '#ea80fc') {
-                theme.background = 'linear-gradient(135deg, #ea80fc, #4a148c)';
-            } else if (theme.ballColor === '#80d8ff') {
-                theme.background = 'linear-gradient(135deg, #80d8ff, #01579b)';
+
+    // Force font family
+    function applyFontFix() {
+        const fontStyle = document.createElement('style');
+        fontStyle.textContent = `
+            * {
+                font-family: 'Comic Sans MS', Arial, sans-serif !important;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+            body, input, button, h1, h2, p, div, span {
+                font-family: 'Comic Sans MS', Arial, sans-serif !important;
+            }
+        `;
+        document.head.appendChild(fontStyle);
+    }
+
+    // Enhanced touch controls
+    function setupTouchControls() {
+        // Prevent default touch behaviors
+        document.addEventListener('touchmove', function(e) {
+            if (typeof gameRunning !== 'undefined' && gameRunning) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Main touch handlers
+        function handleTouchStart(e) {
+            if (typeof gameRunning !== 'undefined' && gameRunning) {
+                e.preventDefault();
+                spacePressed = true;
             }
         }
+
+        function handleTouchEnd(e) {
+            if (typeof gameRunning !== 'undefined' && gameRunning) {
+                e.preventDefault();
+                spacePressed = false;
+            }
+        }
+
+        // Add touch listeners
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+        canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+        document.addEventListener('touchstart', handleTouchStart, { passive: false });
+        document.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+        // Prevent zoom
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        // Disable multiple touch
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     }
+
+    // Viewport meta tag
+    function ensureViewportMeta() {
+        let viewportMeta = document.querySelector('meta[name="viewport"]');
+        if (!viewportMeta) {
+            viewportMeta = document.createElement('meta');
+            viewportMeta.name = 'viewport';
+            document.head.appendChild(viewportMeta);
+        }
+        viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    }
+
+    // Run all fixes
+    function initializeMobileFixes() {
+        applyFontFix();
+        setupTouchControls();
+        ensureViewportMeta();
+    }
+
+    // Run fixes on load and after a short delay to ensure game script is loaded
+    window.addEventListener('load', function() {
+        // Immediate fix
+        initializeMobileFixes();
+        
+        // Delayed fix to catch any late-loaded elements
+        setTimeout(initializeMobileFixes, 1000);
+    });
+})();
     </script>
     </body>
 </html>
